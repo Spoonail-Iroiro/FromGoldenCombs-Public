@@ -51,6 +51,7 @@
   "fromgoldencombs:handbooktitle-claypothive": "Used for:",
   "fromgoldencombs:handbooktext-claypothive": "Claypot Test",
   "blockhelp-ceramichive-populated-notop": "Place hive top.",
+  "blockhelp-ceramichive-empty-notop": "Use populated skep to start colony",
   "blockhelp-ceramichive-empty-withtop": "Use populated skep.",
   "blockhelp-ceramichive-empty-withtop-2": "To pick up.",
   "blockhelp-ceramichive-populated-withtop": "Right click removes honey pot, wax ring indicates harvestable.",
@@ -137,7 +138,21 @@
   "item-handbooktext-frameliner": "Frame liners are created using <a href=\"handbook://block-linen-waxed-down\">waxed linen</a>, and a knife. They are then used to line <a href=\"handbook://item-fromgoldencombs:beeframe-ebony-empty\">empty frames</a> in a <a href=\"handbook://block-fromgoldencombs:framerack-ebony-baldcypress-east\">frame rack</a>.",
   "item-handbooktitle-waxedflaxtwine": "Waxed Flaxen Twine",
   "item-handbooktext-waxedflaxtwine": "This twine is used for repairing <a href=\"handbook://item-fromgoldencombs:beeframe-ebony-lined\">lined frame</a> in a <a href=\"handbook://block-fromgoldencombs:framerack-ebony-baldcypress-east\">frame rack</a>.",
-  "fromgoldencombs:nonemptysuper": "The super must be empty to convert to a brood box."
+  "fromgoldencombs:nonemptysuper": "The super must be empty to convert to a brood box.",
+
+  "item-langstrothpart": "{1} {0}",
+  "langstroth-populated": "Populated",
+  "materials": "{0}-{1}",
+  
+  "fired-blue": "blue",
+  "fired-fire": "fire",
+  "fired-black": "black",
+  "fired-brown": "brown",
+  "fired-cream": "cream",
+  "fired-gray": "gray",
+  "fired-orange": "orange",
+  "fired-red": "red",
+  "fired-tan": "tan"
 
 }
 

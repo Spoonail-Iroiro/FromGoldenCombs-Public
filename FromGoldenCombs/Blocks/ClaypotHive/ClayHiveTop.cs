@@ -148,7 +148,7 @@ namespace FromGoldenCombs.Blocks
         public override string GetHeldItemName(ItemStack itemStack)
         {
 
-            return base.GetHeldItemName(itemStack) + " (" + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Lang.Get(this.Variant["color"] + ")"));
+            return base.GetHeldItemName(itemStack) + " (" + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Lang.Get($"fromgoldencombs:fired-{this.Variant["color"]}")) + ")";
         }
     }
 }
