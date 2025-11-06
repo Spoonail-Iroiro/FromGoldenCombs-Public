@@ -503,7 +503,7 @@ namespace FromGoldenCombs.BlockEntities
                         quantityNearbyHives,
                         emptySkeps.Count,
                         (beginPopStartTotalHours + popHiveAfterHours - Api.World.Calendar.TotalHours).ToString("#.##"),
-                        (harvestableAtTotalHours - Api.World.Calendar.TotalHours) / Api.World.Calendar.HoursPerDay,
+                        (harvestableAtTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"),
                         (cooldownUntilTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"))
                         + "\n" + Lang.Get("Population Size: ") + hivePopSize);
             }
