@@ -88,9 +88,10 @@ namespace FromGoldenCombs.BlockEntities
             {
                 this.RegisterGameTickListener(new Action<float>(this.SpawnBeeParticles), 300, 0);
             }
+            this.harvestBase = (FGCServerConfig.Current.SkepDaysToHarvestIn30DayMonths * (Api.World.Calendar.DaysPerMonth / 30f)) * api.World.Calendar.HoursPerDay;
             if (this.wasPlaced)
             {
-                this.harvestableAtTotalHours = api.World.Calendar.TotalHours + 12.0 * (3.0 + api.World.Rand.NextDouble() * 8.0);
+                this.harvestableAtTotalHours = api.World.Calendar.TotalHours + GetHarvestTime();
             }
             this.orientation = base.Block.Variant["side"];
             this.material = base.Block.Variant["material"];
@@ -506,6 +507,7 @@ namespace FromGoldenCombs.BlockEntities
                         (harvestableAtTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"),
                         (cooldownUntilTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"))
                         + "\n" + Lang.Get("Population Size: ") + hivePopSize);
+
             }
 
             //General Information
