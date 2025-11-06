@@ -43,13 +43,15 @@ namespace FromGoldenCombs.Util.HarmonyPatches
         public static bool OnBlockInteractStopPrefix(BlockEntityFruitTreePart __instance, float secondsUsed, IPlayer byPlayer, BlockSelection blockSel)
         {
 
-            if (byPlayer.Entity.Api.Side.IsServer()) { 
+            if (byPlayer.Entity.Api.Side.IsServer())
+            {
                 if ((double)secondsUsed > 1.1 && __instance.FoliageState == EnumFoliageState.Ripe)
                 {
                     counter++;
-                    if (counter > 1) { 
+                    if (counter > 1)
+                    {
                         //This is some jury-rigged bullshit until I can find out why this is getting called twice. 
-                        counter = 0; return true; 
+                        counter = 0; return true;
                     }
                     if (byPlayer != null)
                     {
@@ -66,7 +68,7 @@ namespace FromGoldenCombs.Util.HarmonyPatches
 
         public static bool GetAmbientSoundStrengthPrefix(Block __instance, IWorldAccessor world, BlockPos pos, ref float __result)
         {
- 
+
             float soundVolume = 0f;
             if (__instance is BlockBeehive wildHive)
             {
@@ -80,10 +82,10 @@ namespace FromGoldenCombs.Util.HarmonyPatches
                 __result = soundVolume;
                 return false;
             }
-                
+
             if (world.BlockAccessor.GetBlockEntity(pos) is BEFGCBeehive skep)
             {
-                
+
                 switch ((int)skep.hivePopSize)
                 {
                     case 0: soundVolume = 0.44f; break;

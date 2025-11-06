@@ -12,13 +12,12 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
-using static OpenTK.Graphics.OpenGL.GL;
 
 namespace FromGoldenCombs.BlockEntities
 {
     class BEFGCBeehive : BlockEntityBeehive, IAnimalFoodSource
     {
-            
+
         // Stored values
         int scanIteration;
         int quantityNearbyFlowers;
@@ -63,19 +62,19 @@ namespace FromGoldenCombs.BlockEntities
         public string Type => "food";
 
         static BEFGCBeehive()
-            {
-                Bees = new SimpleParticleProperties(
-                    1, 1,
-                    ColorUtil.ToRgba(255, 215, 156, 65),
-                    new Vec3d(), new Vec3d(),
-                    new Vec3f(0, 0, 0),
-                    new Vec3f(0, 0, 0),
-                    1f,
-                    0f,
-                    0.5f, 0.5f,
-                    EnumParticleModel.Cube
-                );
-            }
+        {
+            Bees = new SimpleParticleProperties(
+                1, 1,
+                ColorUtil.ToRgba(255, 215, 156, 65),
+                new Vec3d(), new Vec3d(),
+                new Vec3f(0, 0, 0),
+                new Vec3f(0, 0, 0),
+                1f,
+                0f,
+                0.5f, 0.5f,
+                EnumParticleModel.Cube
+            );
+        }
 
 
 
@@ -139,7 +138,8 @@ namespace FromGoldenCombs.BlockEntities
 
         private void manageCropBoost(BlockPos cropPos, double distance, ref EnumHandling handling)
         {
-            if (Api.Side.IsServer()) {
+            if (Api.Side.IsServer())
+            {
                 if (cropcharges >= 1 && Api.World.BlockAccessor.GetBlock(cropPos).HasBehavior<PushEventOnCropBreakBehavior>() && distance < cropChargeRange)
                 {
                     if (Api.World.BlockAccessor.GetBlock(cropPos) is BlockCrop crop && Api.World.BlockAccessor.GetBlockEntity(cropPos.DownCopy()) is BlockEntityFarmland farmland)
@@ -156,12 +156,12 @@ namespace FromGoldenCombs.BlockEntities
                 }
 
                 MarkDirty();
-                
-                
+
+
             }
         }
 
-        
+
         private void manageBerryBoost(BlockPos bushPos, double distance, ref EnumHandling handling)
         {
             if (cropcharges >= 1 && Api.World.BlockAccessor.GetBlock(bushPos).HasBehavior<PushEventOnBlockHarvested>() && distance < cropChargeRange)
@@ -211,7 +211,7 @@ namespace FromGoldenCombs.BlockEntities
             if (Api.World.Rand.NextDouble() > 2 * dayLightStrength - 0.5) return;
 
             Random rand = Api.World.Rand;
-            
+
             Bees.MinQuantity = actvitiyLevel;
 
             // Leave hive
@@ -281,7 +281,7 @@ namespace FromGoldenCombs.BlockEntities
                 tempOutOfRange = true;
             }
 
-            if(hivePopSize > 0 && !tempOutOfRange) handleCropCharges(tempOutOfRange, worldTime);
+            if (hivePopSize > 0 && !tempOutOfRange) handleCropCharges(tempOutOfRange, worldTime);
 
             // Reset timers during winter
             if (threeDayTemp <= minTemp || threeDayTemp >= maxTemp)
@@ -364,7 +364,7 @@ namespace FromGoldenCombs.BlockEntities
                             this.scanQuantityNearbyHives++;
                         }
                         return;
-                    } 
+                    }
                 }
             });
 
@@ -388,7 +388,7 @@ namespace FromGoldenCombs.BlockEntities
                 skepToPop = null;
             }
 
-                hivePopSize = (EnumHivePopSize)GameMath.Clamp(quantityNearbyFlowers - FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives, 0, 2);
+            hivePopSize = (EnumHivePopSize)GameMath.Clamp(quantityNearbyFlowers - FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives, 0, 2);
 
             if (FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives + FGCServerConfig.Current.minFlowersPerHive > quantityNearbyFlowers)
             {
@@ -416,7 +416,7 @@ namespace FromGoldenCombs.BlockEntities
             // We want to translate the swarmability value 0..4
             // into swarm days 12..0
             float swarmInDays = (4f - swarmability) * 2.5f;
-            
+
             if (swarmability <= 0) skepToPop = null;
 
 
@@ -492,8 +492,8 @@ namespace FromGoldenCombs.BlockEntities
 
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
-            
-            
+
+
             //Debug Information
             if (Api.World.EntityDebugMode && forPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative)
             {
@@ -545,7 +545,7 @@ namespace FromGoldenCombs.BlockEntities
             {
                 hiveState += "\n" + "The bees are out gathering.";
             }
-            else if (!outOfTemp && !Harvestable) 
+            else if (!outOfTemp && !Harvestable)
             {
                 hiveState += "\n" + "The bees are scouting for flowers.";
             }
@@ -572,7 +572,7 @@ namespace FromGoldenCombs.BlockEntities
             if (this.roomness > 0f)
             {
                 dsc.AppendLine("\n" + Lang.Get("greenhousetempbonus", Array.Empty<object>()));
-                
+
             }
             if (FGCServerConfig.Current.showExtraBeehiveInfo && (forPlayer.Entity.Controls.ShiftKey || FGCClientConfig.Current.alwaysShowExtraBeehiveInfo == true))
             {

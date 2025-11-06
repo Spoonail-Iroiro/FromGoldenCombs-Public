@@ -13,7 +13,7 @@ namespace FromGoldenCombs.BlockEntities
     //TODO: Consider adding a lid object, or adding an animation showing the lid being slid off (This sounds neat). 
     //TODO: Find out how to get animation functioning
     //TODO: Fix selection box issue
-    
+
     class BELangstrothSuper : BlockEntityDisplay
     {
 
@@ -53,7 +53,7 @@ namespace FromGoldenCombs.BlockEntities
                 }
             }
         }
-                
+
         public override void OnBlockBroken(IPlayer player)
         {
             // Don't drop inventory contents
@@ -64,7 +64,7 @@ namespace FromGoldenCombs.BlockEntities
             ItemSlot activeHotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
             ItemStack itemstack = activeHotbarSlot.Itemstack;
             bool flag = (itemstack != null ? itemstack.Collectible.FirstCodePart() == "beeframe" : false);
-                //((itemstack != null) ? itemstack.Collectible : null) is LangstrothFrame;
+            //((itemstack != null) ? itemstack.Collectible : null) is LangstrothFrame;
             BlockContainer blockContainer = this.Api.World.BlockAccessor.GetBlock(blockSel.Position, 0) as BlockContainer;
             blockContainer.SetContents(new ItemStack(blockContainer, 1), base.GetContentStacks(true));
             if (!byPlayer.Entity.Controls.Sneak && !activeHotbarSlot.Empty && activeHotbarSlot.Itemstack.Collectible.FirstCodePart(0) == "langstrothbroodtop" && activeHotbarSlot.Itemstack.Collectible.Variant["primary"] == base.Block.Variant["primary"] && activeHotbarSlot.Itemstack.Collectible.Variant["accent"] == base.Block.Variant["accent"])
@@ -131,7 +131,7 @@ namespace FromGoldenCombs.BlockEntities
                 {
                     this.animUtil.StopAnimation("lidclosed");
                     this.animUtil.StartAnimation(openAnimData);
-                    
+
                     this.Api.World.BlockAccessor.ExchangeBlock(this.Api.World.GetBlock(blockContainer.CodeWithVariant("open", "open")).BlockId, blockSel.Position);
                     updateMeshes();
                     base.MarkDirty(true, null);
@@ -162,7 +162,7 @@ namespace FromGoldenCombs.BlockEntities
         private bool TryTake(IPlayer byPlayer, BlockSelection blockSel)
         {
             int index = blockSel.SelectionBoxIndex;
-            
+
             if (!inv[index].Empty)
             {
                 ItemStack stack = inv[index].TakeOut(1);
@@ -184,7 +184,7 @@ namespace FromGoldenCombs.BlockEntities
             return false;
         }
 
-        public Vec3f getTranslation(Block block,int index)
+        public Vec3f getTranslation(Block block, int index)
         {
             float x = 0f;
             //float y = 0.069f;
@@ -192,7 +192,7 @@ namespace FromGoldenCombs.BlockEntities
             Vec3f translation = new(0f, 0f, 0f);
             if (block.Variant["side"] == "north")
             {
-                translation.X = .7253f + .0625f * index - 1;    
+                translation.X = .7253f + .0625f * index - 1;
             }
             else if (block.Variant["side"] == "south")
             {
@@ -254,7 +254,7 @@ namespace FromGoldenCombs.BlockEntities
             {
                 mesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 1.5707964f, 0f, 0f);
                 mesh.Scale(new Vec3f(0.5f, 0.5f, 0.5f), 0.33f, 0.33f, 0.33f);
-                mesh.Translate(getTranslation(block,index));
+                mesh.Translate(getTranslation(block, index));
             }
             string key = this.getMeshCacheKey(stack);
             this.MeshCache[key] = mesh;
@@ -267,9 +267,9 @@ namespace FromGoldenCombs.BlockEntities
             float[][] tfMatrices = new float[10][];
             for (int index = 0; index < 10; index++)
             {
-                
+
                 Vec3f translation = new(0f, 0.069f, 0f);
-                
+
                 if (block.Variant["side"] == "north")
                 {
                     translation.X = .7253f + .0625f * index - 1;
@@ -282,7 +282,7 @@ namespace FromGoldenCombs.BlockEntities
                 }
                 else if (block.Variant["side"] == "west")
                 {
-                    translation.Z = 0.2747f - .0625f * index +1;
+                    translation.Z = 0.2747f - .0625f * index + 1;
                     tfMatrices[index] = new Matrixf().Translate(translation.X, translation.Y, translation.Z).RotateYDeg(90).Values;
                 }
                 else if (block.Variant["side"] == "east")
@@ -291,7 +291,7 @@ namespace FromGoldenCombs.BlockEntities
                     translation.Z = 0.7253f + .0625f * index;
                     tfMatrices[index] = new Matrixf().Translate(translation.X, translation.Y, translation.Z).RotateYDeg(90).Values;
                 }
-                
+
             }
             return tfMatrices;
         }
@@ -342,7 +342,7 @@ namespace FromGoldenCombs.BlockEntities
             }
             else if (index == 10)
             {
-                
+
                 sb.AppendLine("");
                 for (int i = 0; i < 10; i++)
                 {
@@ -353,7 +353,7 @@ namespace FromGoldenCombs.BlockEntities
                     }
                     else
                     {
-                        
+
                         sb.AppendLine(slot.Itemstack.GetName());
                     }
                 }
