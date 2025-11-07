@@ -437,8 +437,8 @@ namespace FromGoldenCombs.BlockEntities
                     Bees.MinPos = startPos;
                     Bees.MinVelocity = minVelo;
                     Bees.WithTerrainCollision = true;
-                    Api.World.SpawnParticles(Bees);
                 }
+                Api.World.SpawnParticles(Bees);
             }
         }
 
@@ -622,6 +622,7 @@ namespace FromGoldenCombs.BlockEntities
             tree.SetDouble("cropChargeAtTotalHours", cropChargeAtTotalHours);
             tree.SetInt("maxCropCharges", maxCropCharges);
             tree.SetInt("cropcharges", cropcharges);
+            tree.SetFloat("activityLevel", _activityLevel);
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
@@ -647,6 +648,7 @@ namespace FromGoldenCombs.BlockEntities
             cropChargeAtTotalHours = tree.GetDouble("cropChargeAtTotalHours");
             maxCropCharges = tree.GetInt("maxCropCharges");
             cropcharges = tree.GetInt("cropcharges");
+            _activityLevel = tree.GetFloat("activityLevel");
 
             updateMeshes();
 
