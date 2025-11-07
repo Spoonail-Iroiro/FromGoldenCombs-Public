@@ -836,8 +836,8 @@ namespace FromGoldenCombs.BlockEntities
                     Bees.MinPos = startPos;
                     Bees.MinVelocity = minVelo;
                     Bees.WithTerrainCollision = true;
-                    Api.World.SpawnParticles(Bees);
                 }
+                Api.World.SpawnParticles(Bees);
             }
             harvestBase = (float)(((float)FGCServerConfig.Current.LangstrothDaysToHarvestIn30DayMonths * (float)(Api.World.Calendar.DaysPerMonth / 30f)) * (float)Api.World.Calendar.HoursPerDay);
         }
