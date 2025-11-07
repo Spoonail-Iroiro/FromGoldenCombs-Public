@@ -17,17 +17,23 @@ namespace FromGoldenCombs.BlockEntities
 {
     class BEFGCBeehive : BlockEntityBeehive, IAnimalFoodSource
     {
-
         // Stored values
         int scanIteration;
         int quantityNearbyFlowers;
         int quantityNearbyHives;
-        List<BlockPos> emptySkeps = new();
+        // No longer handle and sync emptySkeps, skepToPop, cooldownUntilTotalHours and scanEmptySkeps not to bother vanilla population.
+        // This will fix vanilla cooldown being reset to 0 by loading FGC cooldown through FromTreeAttribute.
+        // In (at least) FGC v1.9.4, FGC scan(OnScanForEmptySkep and OnScanComplete) already didn't populate skeps because
+        // it didn't count empty skeps, so this change won't affect population.
+        // Skeps are actually populated by vanilla scan, which still runs because this class calls base.Initialize.
+        //List<BlockPos> emptySkeps = new();
         bool isWildHive;
-        BlockPos skepToPop;
+        //BlockPos skepToPop;
         double beginPopStartTotalHours;
         float popHiveAfterHours;
-        double cooldownUntilTotalHours;
+        //double cooldownUntilTotalHours;
+        // Cooldown for scanning flowers on FGC side, caused by too hot/cold temperature
+        double fgcCooldownUntilTotalHours;
         double harvestableAtTotalHours;
         float harvestBase;
         new bool Harvestable;
@@ -36,7 +42,7 @@ namespace FromGoldenCombs.BlockEntities
         // Current scan values
         int scanQuantityNearbyFlowers;
         int scanQuantityNearbyHives;
-        List<BlockPos> scanEmptySkeps = new();
+        //List<BlockPos> scanEmptySkeps = new();
         double cropChargeGrowthHours = 24;
         double chargesPerDay = FGCServerConfig.Current.skepBaseChargesPerDay; //Number of hours until the hive accumulates a new grow charge.
         double cropChargeAtTotalHours;
@@ -278,7 +284,8 @@ namespace FromGoldenCombs.BlockEntities
             if (threeDayTemp < minTemp || threeDayTemp > maxTemp && quantityNearbyFlowers != 0)
             {
                 harvestableAtTotalHours = worldTime + GetHarvestTime();
-                cooldownUntilTotalHours = worldTime + 8;
+                //cooldownUntilTotalHours = worldTime + 8;
+                fgcCooldownUntilTotalHours = worldTime + 8;
                 tempOutOfRange = true;
             }
 
@@ -288,7 +295,8 @@ namespace FromGoldenCombs.BlockEntities
             if (threeDayTemp <= minTemp || threeDayTemp >= maxTemp)
             {
                 harvestableAtTotalHours = worldTime + harvestBase;
-                cooldownUntilTotalHours = worldTime + 8;
+                fgcCooldownUntilTotalHours = worldTime + 8;
+                //cooldownUntilTotalHours = worldTime + 8;
             }
 
             if (!Harvestable && !isWildHive && worldTime > harvestableAtTotalHours && hivePopSize > EnumHivePopSize.Poor)
@@ -319,13 +327,14 @@ namespace FromGoldenCombs.BlockEntities
             MarkDirty();
             if (actvitiyLevel <= 0) return;
             if (Api.Side == EnumAppSide.Client) return;
-            if (Api.World.Calendar.TotalHours < cooldownUntilTotalHours) return;
+            //if (Api.World.Calendar.TotalHours < cooldownUntilTotalHours) return;
+            if (Api.World.Calendar.TotalHours < fgcCooldownUntilTotalHours) return;
 
             if (scanIteration == 0)
             {
                 scanQuantityNearbyFlowers = 0;
                 scanQuantityNearbyHives = 0;
-                scanEmptySkeps.Clear();
+                //scanEmptySkeps.Clear();
             }
 
             int minX = -8 + 8 * (scanIteration / 2);
@@ -382,30 +391,30 @@ namespace FromGoldenCombs.BlockEntities
         {
             quantityNearbyFlowers = scanQuantityNearbyFlowers;
             quantityNearbyHives = scanQuantityNearbyHives;
-            emptySkeps = new List<BlockPos>(scanEmptySkeps);
+            //emptySkeps = new List<BlockPos>(scanEmptySkeps);
 
-            if (emptySkeps.Count == 0)
-            {
-                skepToPop = null;
-            }
+            //if (emptySkeps.Count == 0)
+            //{
+            //    skepToPop = null;
+            //}
 
             hivePopSize = (EnumHivePopSize)GameMath.Clamp(quantityNearbyFlowers - FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives, 0, 2);
 
             if (FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives + FGCServerConfig.Current.minFlowersPerHive > quantityNearbyFlowers)
             {
-                skepToPop = null;
+                //skepToPop = null;
                 MarkDirty();
                 return;
             }
 
-            if (skepToPop != null && Api.World.Calendar.TotalHours > beginPopStartTotalHours + popHiveAfterHours)
-            {
-                TryPopCurrentSkep();
-                //TODO: Implement variable length swarm lengths based on DaysPerMonth
-                cooldownUntilTotalHours = Api.World.Calendar.TotalHours + 8.0;
-                MarkDirty();
-                return;
-            }
+            //if (skepToPop != null && Api.World.Calendar.TotalHours > beginPopStartTotalHours + popHiveAfterHours)
+            //{
+            //    TryPopCurrentSkep();
+            //    //TODO: Implement variable length swarm lengths based on DaysPerMonth
+            //    cooldownUntilTotalHours = Api.World.Calendar.TotalHours + 8.0;
+            //    MarkDirty();
+            //    return;
+            //}
 
             // Default Spread speed: Once every 4 in game days * factor
             // Don't spread at all if 3 * livinghives + 3 > flowers
@@ -418,68 +427,67 @@ namespace FromGoldenCombs.BlockEntities
             // into swarm days 12..0
             float swarmInDays = (4f - swarmability) * 2.5f;
 
-            if (swarmability <= 0) skepToPop = null;
+            //if (swarmability <= 0) skepToPop = null;
 
 
-            //if (skepToPop != null && Api.World.Calendar.GetSeason(Pos)==EnumSeason.Spring)
-            if (skepToPop != null)
-            {
-                float newPopHours = 24 * swarmInDays;
-                this.popHiveAfterHours = (float)(0.75 * popHiveAfterHours + 0.25 * newPopHours);
+            //if (skepToPop != null)
+            //{
+            //    float newPopHours = 24 * swarmInDays;
+            //    this.popHiveAfterHours = (float)(0.75 * popHiveAfterHours + 0.25 * newPopHours);
 
-                if (!emptySkeps.Contains(skepToPop))
-                {
-                    skepToPop = null;
-                    MarkDirty();
-                }
+            //    if (!emptySkeps.Contains(skepToPop))
+            //    {
+            //        skepToPop = null;
+            //        MarkDirty();
+            //    }
 
-                return;
-            }
+            //    return;
+            //}
 
             popHiveAfterHours = 24f * swarmInDays;
             beginPopStartTotalHours = Api.World.Calendar.TotalHours;
 
-            float mindistance = 999f;
-            BlockPos closestEmptySkep = new(0);
-            foreach (BlockPos emptySkep in emptySkeps)
-            {
-                float dist = emptySkep.DistanceTo(this.Pos);
-                if (dist < mindistance)
-                {
-                    mindistance = dist;
-                    closestEmptySkep = emptySkep;
-                }
-            }
+            //float mindistance = 999f;
+            //BlockPos closestEmptySkep = new(0);
+            //foreach (BlockPos emptySkep in emptySkeps)
+            //{
+            //    float dist = emptySkep.DistanceTo(this.Pos);
+            //    if (dist < mindistance)
+            //    {
+            //        mindistance = dist;
+            //        closestEmptySkep = emptySkep;
+            //    }
+            //}
 
-            skepToPop = closestEmptySkep;
+            //skepToPop = closestEmptySkep;
         }
 
 
-        private void TryPopCurrentSkep()
-        {
-            Block skepToPopBlock = Api.World.BlockAccessor.GetBlock(skepToPop, 0);
-            if (skepToPopBlock == null || !(skepToPopBlock is BlockSkep))
-            {
-                // Skep must have changed since last time we checked, so lets restart 
-                this.skepToPop = null;
-                return;
-            }
+        //private void TryPopCurrentSkep()
+        //{
+        //    Block skepToPopBlock = Api.World.BlockAccessor.GetBlock(skepToPop, 0);
+        //    if (skepToPopBlock == null || !(skepToPopBlock is BlockSkep))
+        //    {
+        //        // Skep must have changed since last time we checked, so lets restart 
+        //        this.skepToPop = null;
+        //        return;
+        //    }
 
-            string orient = skepToPopBlock.LastCodePart();
-            string blockcode = "skep-populated-" + orient;
-            Block fullSkep = Api.World.GetBlock(new AssetLocation(blockcode));
+        //    string orient = skepToPopBlock.LastCodePart();
+        //    string blockcode = "skep-populated-" + orient;
+        //    Block fullSkep = Api.World.GetBlock(new AssetLocation(blockcode));
 
-            if (fullSkep == null)
-            {
-                Api.World.Logger.Warning("BEBeehive.TryPopSkep() - block with code {0} does not exist?", blockcode);
-            }
-            else
-            {
-                Api.World.BlockAccessor.SetBlock(fullSkep.BlockId, skepToPop);
-                hivePopSize = EnumHivePopSize.Poor;
-                this.skepToPop = null;
-            }
-        }
+        //    if (fullSkep == null)
+        //    {
+        //        Api.World.Logger.Warning("BEBeehive.TryPopSkep() - block with code {0} does not exist?", blockcode);
+        //    }
+        //    else
+        //    {
+        //        Api.World.BlockAccessor.SetBlock(fullSkep.BlockId, skepToPop);
+        //        hivePopSize = EnumHivePopSize.Poor;
+        //        this.skepToPop = null;
+        //    }
+        //}
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tesselator)
         {
@@ -499,13 +507,13 @@ namespace FromGoldenCombs.BlockEntities
             if (Api.World.EntityDebugMode && forPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative)
             {
                 dsc.AppendLine(
-                        Lang.Get("Nearby flowers: {0}, Nearby Hives: {1}, Empty Hives: {2}, Pop after hours: {3}. harvest in {4}, repop cooldown: {5}",
+                        Lang.Get("Nearby flowers: {0}, Nearby Hives: {1}, Empty Hives: {2}, Pop after hours: {3}. harvest in {4}, scan cooldown (FGC): {5}",
                         quantityNearbyFlowers,
                         quantityNearbyHives,
-                        emptySkeps.Count,
+                        "N/A",//emptySkeps.Count,
                         (beginPopStartTotalHours + popHiveAfterHours - Api.World.Calendar.TotalHours).ToString("#.##"),
                         (harvestableAtTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"),
-                        (cooldownUntilTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"))
+                        (fgcCooldownUntilTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"))
                         + "\n" + Lang.Get("Population Size: ") + hivePopSize);
 
             }
@@ -552,24 +560,24 @@ namespace FromGoldenCombs.BlockEntities
                 hiveState += "\n" + "The bees are scouting for flowers.";
             }
 
-            if (skepToPop != null && Api.World.Calendar.TotalHours > cooldownUntilTotalHours)
-            {
-                double inhours = beginPopStartTotalHours + popHiveAfterHours - Api.World.Calendar.TotalHours;
-                double days = inhours / Api.World.Calendar.HoursPerDay;
+            //if (skepToPop != null && Api.World.Calendar.TotalHours > cooldownUntilTotalHours)
+            //{
+            //    double inhours = beginPopStartTotalHours + popHiveAfterHours - Api.World.Calendar.TotalHours;
+            //    double days = inhours / Api.World.Calendar.HoursPerDay;
 
-                if (days > 1.5)
-                {
-                    hiveState += "\n" + Lang.Get("Will swarm in approx. {0} days", Math.Round(days));
-                }
-                else if (days > 0.5)
-                {
-                    hiveState += "\n" + Lang.Get("Will swarm in approx. one day");
-                }
-                else
-                {
-                    hiveState += "\n" + Lang.Get("Will swarm in less than a day");
-                }
-            }
+            //    if (days > 1.5)
+            //    {
+            //        hiveState += "\n" + Lang.Get("Will swarm in approx. {0} days", Math.Round(days));
+            //    }
+            //    else if (days > 0.5)
+            //    {
+            //        hiveState += "\n" + Lang.Get("Will swarm in approx. one day");
+            //    }
+            //    else
+            //    {
+            //        hiveState += "\n" + Lang.Get("Will swarm in less than a day");
+            //    }
+            //}
             dsc.AppendLine(hiveState);
             if (this.roomness > 0f)
             {
@@ -592,39 +600,40 @@ namespace FromGoldenCombs.BlockEntities
             tree.SetInt("scanIteration", scanIteration);
             tree.SetInt("quantityNearbyFlowers", quantityNearbyFlowers);
             tree.SetInt("quantityNearbyHives", quantityNearbyHives);
-            TreeAttribute treeAttribute = new TreeAttribute();
-            for (int i = 0; i < emptySkeps.Count; i++)
-            {
-                treeAttribute.SetInt("posX-" + i, emptySkeps[i].X);
-                treeAttribute.SetInt("posY-" + i, emptySkeps[i].Y);
-                treeAttribute.SetInt("posZ-" + i, emptySkeps[i].Z);
-            }
+            //TreeAttribute treeAttribute = new TreeAttribute();
+            //for (int i = 0; i < emptySkeps.Count; i++)
+            //{
+            //    treeAttribute.SetInt("posX-" + i, emptySkeps[i].X);
+            //    treeAttribute.SetInt("posY-" + i, emptySkeps[i].Y);
+            //    treeAttribute.SetInt("posZ-" + i, emptySkeps[i].Z);
+            //}
 
-            tree["emptyskeps"] = treeAttribute;
+            //tree["emptyskeps"] = treeAttribute;
             tree.SetInt("scanQuantityNearbyFlowers", scanQuantityNearbyFlowers);
             tree.SetInt("scanQuantityNearbyHives", scanQuantityNearbyHives);
-            TreeAttribute treeAttribute2 = new TreeAttribute();
-            for (int j = 0; j < scanEmptySkeps.Count; j++)
-            {
-                treeAttribute2.SetInt("posX-" + j, scanEmptySkeps[j].X);
-                treeAttribute2.SetInt("posY-" + j, scanEmptySkeps[j].Y);
-                treeAttribute2.SetInt("posZ-" + j, scanEmptySkeps[j].Z);
-            }
+            //TreeAttribute treeAttribute2 = new TreeAttribute();
+            //for (int j = 0; j < scanEmptySkeps.Count; j++)
+            //{
+            //    treeAttribute2.SetInt("posX-" + j, scanEmptySkeps[j].X);
+            //    treeAttribute2.SetInt("posY-" + j, scanEmptySkeps[j].Y);
+            //    treeAttribute2.SetInt("posZ-" + j, scanEmptySkeps[j].Z);
+            //}
 
-            tree["scanEmptySkeps"] = treeAttribute2;
+            //tree["scanEmptySkeps"] = treeAttribute2;
             tree.SetInt("isWildHive", isWildHive ? 1 : 0);
             tree.SetInt("harvestable", Harvestable ? 1 : 0);
-            tree.SetInt("skepToPopX", (!(skepToPop == null)) ? skepToPop.X : 0);
-            tree.SetInt("skepToPopY", (!(skepToPop == null)) ? skepToPop.Y : 0);
-            tree.SetInt("skepToPopZ", (!(skepToPop == null)) ? skepToPop.Z : 0);
+            //tree.SetInt("skepToPopX", (!(skepToPop == null)) ? skepToPop.X : 0);
+            //tree.SetInt("skepToPopY", (!(skepToPop == null)) ? skepToPop.Y : 0);
+            //tree.SetInt("skepToPopZ", (!(skepToPop == null)) ? skepToPop.Z : 0);
             tree.SetDouble("beginPopStartTotalHours", beginPopStartTotalHours);
             tree.SetFloat("popHiveAfterHours", popHiveAfterHours);
-            tree.SetDouble("cooldownUntilTotalHours", cooldownUntilTotalHours);
+            //tree.SetDouble("cooldownUntilTotalHours", cooldownUntilTotalHours);
             tree.SetDouble("harvestableAtTotalHours", harvestableAtTotalHours);
             tree.SetInt("hiveHealth", (int)hivePopSize);
             tree.SetFloat("roomness", roomness);
             tree.SetDouble("cropChargeAtTotalHours", cropChargeAtTotalHours);
             tree.SetInt("cropcharges", cropcharges);
+            tree.SetDouble("fgcCooldownUntilTotalHours", fgcCooldownUntilTotalHours);
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
@@ -634,41 +643,41 @@ namespace FromGoldenCombs.BlockEntities
             scanIteration = tree.GetInt("scanIteration");
             quantityNearbyFlowers = tree.GetInt("quantityNearbyFlowers");
             quantityNearbyHives = tree.GetInt("quantityNearbyHives");
-            emptySkeps.Clear();
-            TreeAttribute treeAttribute = tree["emptyskeps"] as TreeAttribute;
-            for (int i = 0; i < treeAttribute.Count / 3; i++)
-            {
-                emptySkeps.Add(new BlockPos(treeAttribute.GetInt("posX-" + i), treeAttribute.GetInt("posY-" + i), treeAttribute.GetInt("posZ-" + i)));
-            }
+            //emptySkeps.Clear();
+            //TreeAttribute treeAttribute = tree["emptyskeps"] as TreeAttribute;
+            //for (int i = 0; i < treeAttribute.Count / 3; i++)
+            //{
+            //    emptySkeps.Add(new BlockPos(treeAttribute.GetInt("posX-" + i), treeAttribute.GetInt("posY-" + i), treeAttribute.GetInt("posZ-" + i)));
+            //}
 
             scanQuantityNearbyFlowers = tree.GetInt("scanQuantityNearbyFlowers");
             scanQuantityNearbyHives = tree.GetInt("scanQuantityNearbyHives");
-            scanEmptySkeps.Clear();
-            TreeAttribute treeAttribute2 = tree["scanEmptySkeps"] as TreeAttribute;
-            int num = 0;
-            while (treeAttribute2 != null && num < treeAttribute2.Count / 3)
-            {
-                scanEmptySkeps.Add(new BlockPos(treeAttribute2.GetInt("posX-" + num), treeAttribute2.GetInt("posY-" + num), treeAttribute2.GetInt("posZ-" + num)));
-                num++;
-            }
+            //scanEmptySkeps.Clear();
+            //TreeAttribute treeAttribute2 = tree["scanEmptySkeps"] as TreeAttribute;
+            //int num = 0;
+            //while (treeAttribute2 != null && num < treeAttribute2.Count / 3)
+            //{
+            //    scanEmptySkeps.Add(new BlockPos(treeAttribute2.GetInt("posX-" + num), treeAttribute2.GetInt("posY-" + num), treeAttribute2.GetInt("posZ-" + num)));
+            //    num++;
+            //}
 
             isWildHive = tree.GetInt("isWildHive") > 0;
             Harvestable = tree.GetInt("harvestable") > 0;
-            int @int = tree.GetInt("skepToPopX");
-            int int2 = tree.GetInt("skepToPopY");
-            int int3 = tree.GetInt("skepToPopZ");
-            if (@int != 0 || int2 != 0 || int3 != 0)
-            {
-                skepToPop = new BlockPos(@int, int2, int3);
-            }
-            else
-            {
-                skepToPop = null;
-            }
+            //int @int = tree.GetInt("skepToPopX");
+            //int int2 = tree.GetInt("skepToPopY");
+            //int int3 = tree.GetInt("skepToPopZ");
+            //if (@int != 0 || int2 != 0 || int3 != 0)
+            //{
+            //    skepToPop = new BlockPos(@int, int2, int3);
+            //}
+            //else
+            //{
+            //    skepToPop = null;
+            //}
 
             beginPopStartTotalHours = tree.GetDouble("beginPopStartTotalHours");
             popHiveAfterHours = tree.GetFloat("popHiveAfterHours");
-            cooldownUntilTotalHours = tree.GetDouble("cooldownUntilTotalHours");
+            //cooldownUntilTotalHours = tree.GetDouble("cooldownUntilTotalHours");
             harvestableAtTotalHours = tree.GetDouble("harvestableAtTotalHours");
             hivePopSize = (EnumHivePopSize)tree.GetInt("hiveHealth");
             roomness = tree.GetFloat("roomness");
@@ -678,6 +687,7 @@ namespace FromGoldenCombs.BlockEntities
             {
                 MarkDirty(redrawOnClient: true);
             }
+            fgcCooldownUntilTotalHours = tree.GetDouble("fgcCooldownUntilTotalHours");
         }
 
 
