@@ -183,15 +183,22 @@ namespace FromGoldenCombs.BlockEntities
 
         private void manageBerryBoost(BlockPos bushPos, double distance, ref EnumHandling handling)
         {
-            if (cropcharges >= 1 && Api.World.BlockAccessor.GetBlock(bushPos).HasBehavior<PushEventOnBlockHarvested>() && distance < cropChargeRange)
-            {
-                PushEventOnBlockHarvested eventBehavior = Api.World.BlockAccessor.GetBlock(bushPos).GetBehavior<PushEventOnBlockHarvested>();
-                eventBehavior.useBeeBoost = true;
-                cropcharges--;
-                
-                handling = EnumHandling.PreventSubsequent;
-                MarkDirty();
-            }
+            if (Api?.World == null) return;
+            if (cropcharges < 1 || distance >= cropChargeRange) return;
+
+            Block bushBlock = Api.World.BlockAccessor.GetBlock(bushPos);
+            if (bushBlock == null) return;
+            if (!bushBlock.HasBehavior<PushEventOnBlockHarvested>()) return;
+
+            PushEventOnBlockHarvested eventBehavior = bushBlock.GetBehavior<PushEventOnBlockHarvested>();
+            if (eventBehavior == null) return;
+
+            // Claim the pollination event so other nearby hives don't all do the same work.
+            handling = EnumHandling.PreventSubsequent;
+
+            eventBehavior.useBeeBoost = true;
+            cropcharges--;
+            MarkDirty();
         }
 
         private void manageFruitBoost(BlockPos fruitFoliagePos, double distance, ref EnumHandling handling)
