@@ -204,25 +204,47 @@ namespace FromGoldenCombs.BlockEntities
         private void manageFruitBoost(BlockPos fruitFoliagePos, double distance, ref EnumHandling handling)
         {
 
-            if (cropcharges >= 1 && Api.World.BlockAccessor.GetBlockEntity(fruitFoliagePos) is BlockEntityFruitTreePart beFTP && distance < cropChargeRange)
-            {
-                BlockPos pos = this.Pos;
-                AssetLocation loc = AssetLocation.Create(beFTP.Block.Attributes["branchBlock"].AsString(null), beFTP.Block.Code.Domain);
-                foreach (BlockDropItemStack drop in (beFTP.Api.World.GetBlock(loc) as BlockFruitTreeBranch).TypeProps[beFTP.TreeType].FruitStacks)
-                {
-                    ItemStack stack = drop.GetNextItemStack(0.25f);
-                    if (stack != null)
-                    {
+            if (Api?.Side != EnumAppSide.Server || Api?.World == null) return;
+            if (cropcharges < 1 || distance >= cropChargeRange) return;
 
-                        beFTP.Api.World.SpawnItemEntity(stack, beFTP.Pos.Add(0.0f, 0.5f, 0.0f), null);
-                    }
-                    if (drop.LastDrop)
-                    {
-                        break;
-                    }
-                }
-                cropcharges--;
+            if (Api.World.BlockAccessor.GetBlockEntity(fruitFoliagePos) is not BlockEntityFruitTreePart beFTP) return;
+
+            string branchBlockCode = beFTP.Block?.Attributes?["branchBlock"]?.AsString(null);
+            if (string.IsNullOrEmpty(branchBlockCode) || beFTP.Block?.Code == null) return;
+
+            AssetLocation loc;
+            try
+            {
+                loc = AssetLocation.Create(branchBlockCode, beFTP.Block.Code.Domain);
             }
+            catch
+            {
+                return;
+            }
+
+            if (loc == null) return;
+
+            BlockFruitTreeBranch branchBlock = Api.World.GetBlock(loc) as BlockFruitTreeBranch;
+            if (branchBlock?.TypeProps == null) return;
+            if (!branchBlock.TypeProps.TryGetValue(beFTP.TreeType, out var typeProps) || typeProps?.FruitStacks == null) return;
+
+            foreach (BlockDropItemStack drop in typeProps.FruitStacks)
+            {
+                if (drop == null) continue;
+
+                ItemStack stack = drop.GetNextItemStack(0.25f);
+                if (stack != null)
+                {
+                    Api.World.SpawnItemEntity(stack, beFTP.Pos.Add(0.0f, 0.5f, 0.0f), null);
+                }
+
+                if (drop.LastDrop)
+                {
+                    break;
+                }
+            }
+
+            cropcharges--;
         }
 
         internal bool OnInteract(IPlayer byPlayer)
