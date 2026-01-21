@@ -28,14 +28,24 @@ namespace FromGoldenCombs.BlockBehaviors
 
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, ref EnumHandling handling)
         {
-            if (byPlayer != null)
+            EnumHandling handlingToApply = _bHandling;
+            _bHandling = EnumHandling.PassThrough;
+
+            // Only apply pollination logic to vanilla crops to avoid compatibility issues
+            // with modded plants that may not follow BlockCrop/farmland expectations.
+            if (block?.Code == null || block.Code.Domain != "game")
+            {
+                return;
+            }
+
+            if (byPlayer != null && !string.IsNullOrEmpty(_eventName))
             {
                 TreeAttribute tree = new TreeAttribute();
                 tree.SetInt("x", pos.X);
                 tree.SetInt("y", pos.Y);
                 tree.SetInt("z", pos.Z);
                 world.Api.Event.PushEvent(this._eventName, tree);
-                handling = _bHandling;
+                handling = handlingToApply;
             }
 
             if (handling == EnumHandling.PreventSubsequent)

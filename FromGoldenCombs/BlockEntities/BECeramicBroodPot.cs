@@ -1,6 +1,5 @@
 ﻿using FromGoldenCombs.BlockBehaviors;
 using FromGoldenCombs.Util.Config;
-using FromGoldenCombs.Util.Config;
 using System;
 using System.Text;
 using Vintagestory.API.Client;
@@ -538,23 +537,24 @@ namespace FromGoldenCombs.BlockEntities
         private void manageCropBoost(BlockPos cropPos, double distance, ref EnumHandling handling)
         {
 
-            if (cropcharges >= 1 && Api.World.BlockAccessor.GetBlock(cropPos).HasBehavior<PushEventOnCropBreakBehavior>() && distance < FGCServerConfig.Current.ceramicCropRange)
-            {
+            if (cropcharges < 1 || Api?.World == null || distance >= FGCServerConfig.Current.ceramicCropRange) return;
 
-                if (Api.World.BlockAccessor.GetBlock(cropPos) is BlockCrop crop && Api.World.BlockAccessor.GetBlockEntity(cropPos.DownCopy()) is BlockEntityFarmland farmland)
-                {
+            Block cropBlock = Api.World.BlockAccessor.GetBlock(cropPos);
+            if (cropBlock?.Code == null || cropBlock.Code.Domain != "game") return;
+            if (!cropBlock.HasBehavior<PushEventOnCropBreakBehavior>()) return;
 
-                    if (Api.World.BlockAccessor.GetBlock(cropPos).GetBehavior<PushEventOnCropBreakBehavior>().validCropStages.Contains<int>(crop.CurrentCropStage))
-                    {
-                        Api.World.BlockAccessor.GetBlock(cropPos).GetBehavior<PushEventOnCropBreakBehavior>().setHandling(EnumHandling.PreventSubsequent);
-                        cropcharges--;
-                    }
+            PushEventOnCropBreakBehavior behavior = cropBlock.GetBehavior<PushEventOnCropBreakBehavior>();
+            if (behavior?.validCropStages == null) return;
 
-                    handling = EnumHandling.PreventSubsequent;
-                }
-                string strin2g = (Api.World.BlockAccessor.GetBlockEntity(this.Pos))?.ToString();
-                MarkDirty();
-            }
+            if (cropBlock is not BlockCrop crop) return;
+            if (Api.World.BlockAccessor.GetBlockEntity(cropPos.DownCopy()) is not BlockEntityFarmland) return;
+
+            if (!behavior.validCropStages.Contains<int>(crop.CurrentCropStage)) return;
+
+            behavior.setHandling(EnumHandling.PreventSubsequent);
+            cropcharges--;
+            handling = EnumHandling.PreventSubsequent;
+            MarkDirty();
         }
 
 
