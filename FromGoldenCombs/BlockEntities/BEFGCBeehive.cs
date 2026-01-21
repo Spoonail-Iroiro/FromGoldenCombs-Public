@@ -143,7 +143,7 @@ namespace FromGoldenCombs.BlockEntities
             if (cropcharges < 1 || Api?.World == null || distance >= cropChargeRange) return;
 
             Block cropBlock = Api.World.BlockAccessor.GetBlock(cropPos);
-            if (cropBlock?.Code == null || cropBlock.Code.Domain != "game") return;
+            if (cropBlock == null) return;
             if (!cropBlock.HasBehavior<PushEventOnCropBreakBehavior>()) return;
 
             PushEventOnCropBreakBehavior behavior = cropBlock.GetBehavior<PushEventOnCropBreakBehavior>();
@@ -151,11 +151,14 @@ namespace FromGoldenCombs.BlockEntities
 
             if (cropBlock is not BlockCrop crop) return;
             if (Api.World.BlockAccessor.GetBlockEntity(cropPos.DownCopy()) is not BlockEntityFarmland) return;
+
+            // Claim the pollination event so other nearby hives don't all do the same work.
+            handling = EnumHandling.PreventSubsequent;
+
             if (!behavior.validCropStages.Contains<int>(crop.CurrentCropStage)) return;
 
             behavior.setHandling(EnumHandling.PreventSubsequent);
             cropcharges--;
-            handling = EnumHandling.PreventSubsequent;
             MarkDirty();
         }
 

@@ -31,13 +31,6 @@ namespace FromGoldenCombs.BlockBehaviors
             EnumHandling handlingToApply = _bHandling;
             _bHandling = EnumHandling.PassThrough;
 
-            // Only apply pollination logic to vanilla crops to avoid compatibility issues
-            // with modded plants that may not follow BlockCrop/farmland expectations.
-            if (block?.Code == null || block.Code.Domain != "game")
-            {
-                return;
-            }
-
             if (byPlayer != null && !string.IsNullOrEmpty(_eventName))
             {
                 TreeAttribute tree = new TreeAttribute();
