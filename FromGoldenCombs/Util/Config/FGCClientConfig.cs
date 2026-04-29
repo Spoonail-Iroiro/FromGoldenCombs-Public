@@ -23,6 +23,8 @@ namespace FromGoldenCombs.Util.Config
         public string wildHiveSoundVolume = "normal";
         public string Always_Show_Hive_Info_Instructions = "Hive info includes the three day temp and remaining pollination charges, only works if the server has .";
         public bool alwaysShowExtraBeehiveInfo = false;
+        public string Hive_Particle_Instructions = "Changes the particle amount of all domestic beehives.";
+        public double hiveParticleAmount = 1.0;
 
         public static FGCClientConfig Current { get; set; }
 
@@ -32,22 +34,24 @@ namespace FromGoldenCombs.Util.Config
         public static FGCClientConfig GetClientDefault()
         {
             FGCClientConfig defaultClientConfig = new();
-            defaultClientConfig.configVersion = 1.7;
+            defaultClientConfig.configVersion = 1.8;
             defaultClientConfig.retainConfigOnVersionChange = false;
             defaultClientConfig.Hive_Sound_Instructions = "Changes the base volume of all domestic beehives. Valid settings for hive sound are off, soft, normal, high (2x), and loud (4x)";
             defaultClientConfig.hiveSoundVolume = "normal";
             defaultClientConfig.Wild_Hive_Sound_Instructions = "Changes the base volume of all wild beehives. Valid settings for wild hive sound are normal, high (2x), and loud (4x)";
             defaultClientConfig.wildHiveSoundVolume = "normal";
             defaultClientConfig.Always_Show_Hive_Info_Instructions = "Hive info includes the three day temp and remaining pollination charges.";
-            defaultClientConfig.alwaysShowExtraBeehiveInfo=false;
+            defaultClientConfig.alwaysShowExtraBeehiveInfo = false;
+            defaultClientConfig.Hive_Particle_Instructions = "Changes the particle amount of all domestic beehives.";
+            defaultClientConfig.hiveParticleAmount = 1.0;
 
             return defaultClientConfig;
         }
 
         internal static void createClientConfig(ICoreAPI api)
         {
-            String[] validHiveVolumes = {"off","soft","normal","high","loud" };
-            String[] validWildHiveVolumes = {"normal", "high", "loud"};
+            String[] validHiveVolumes = { "off", "soft", "normal", "high", "loud" };
+            String[] validWildHiveVolumes = { "normal", "high", "loud" };
             double MasterClientConfigVersion = 1.7;
 
             try
@@ -67,7 +71,7 @@ namespace FromGoldenCombs.Util.Config
                     }
                     if (!validHiveVolumes.Contains<string>(ClientConfig.hiveSoundVolume))
                     {
-                          ClientConfig.hiveSoundVolume = "normal";
+                        ClientConfig.hiveSoundVolume = "normal";
                     }
                     if (ClientConfig.Always_Show_Hive_Info_Instructions != "Hive info includes the three day temp and remaining pollination charges.")
                     {
@@ -76,6 +80,10 @@ namespace FromGoldenCombs.Util.Config
                     if (!validWildHiveVolumes.Contains<string>(ClientConfig.wildHiveSoundVolume))
                     {
                         ClientConfig.wildHiveSoundVolume = "normal";
+                    }
+                    if (ClientConfig.Hive_Particle_Instructions != "Changes the particle amount of all domestic beehives.")
+                    {
+                        ClientConfig.Hive_Particle_Instructions = "Changes the particle amount of all domestic beehives.";
                     }
 
                     Current = ClientConfig;

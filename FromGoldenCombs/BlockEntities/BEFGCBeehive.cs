@@ -12,13 +12,12 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
-using static OpenTK.Graphics.OpenGL.GL;
 
 namespace FromGoldenCombs.BlockEntities
 {
     class BEFGCBeehive : BlockEntityBeehive, IAnimalFoodSource
     {
-            
+
         // Stored values
         int scanIteration;
         int quantityNearbyFlowers;
@@ -63,19 +62,19 @@ namespace FromGoldenCombs.BlockEntities
         public string Type => "food";
 
         static BEFGCBeehive()
-            {
-                Bees = new SimpleParticleProperties(
-                    1, 1,
-                    ColorUtil.ToRgba(255, 215, 156, 65),
-                    new Vec3d(), new Vec3d(),
-                    new Vec3f(0, 0, 0),
-                    new Vec3f(0, 0, 0),
-                    1f,
-                    0f,
-                    0.5f, 0.5f,
-                    EnumParticleModel.Cube
-                );
-            }
+        {
+            Bees = new SimpleParticleProperties(
+                1, 1,
+                ColorUtil.ToRgba(255, 215, 156, 65),
+                new Vec3d(), new Vec3d(),
+                new Vec3f(0, 0, 0),
+                new Vec3f(0, 0, 0),
+                1f,
+                0f,
+                0.5f, 0.5f,
+                EnumParticleModel.Cube
+            );
+        }
 
 
 
@@ -162,7 +161,7 @@ namespace FromGoldenCombs.BlockEntities
             MarkDirty();
         }
 
-        
+
         private void manageBerryBoost(BlockPos bushPos, double distance, ref EnumHandling handling)
         {
             if (Api?.Side != EnumAppSide.Server || Api?.World == null) return;
@@ -238,40 +237,49 @@ namespace FromGoldenCombs.BlockEntities
 
         private void SpawnBeeParticles(float dt)
         {
+            // Particle count scale: base * config value
+            var scale = 1.0f * (float)FGCClientConfig.Current.hiveParticleAmount;
+
             float dayLightStrength = Api.World.Calendar.GetDayLightStrength(Pos.X, Pos.Z);
             if (Api.World.Rand.NextDouble() > 2 * dayLightStrength - 0.5) return;
 
             Random rand = Api.World.Rand;
-            
-            Bees.MinQuantity = actvitiyLevel;
 
-            // Leave hive
-            if (Api.World.Rand.NextDouble() > 0.5)
+            // Particle amount reaches max slightly before max activity level to increase the chance players encounter enough particles
+            Bees.MinQuantity = Math.Min(actvitiyLevel * 1.3f, 1.0f);
+
+            var count = GameMath.RoundRandom(Api.World.Rand, scale);
+
+            for (var i = 0; i < count; ++i)
             {
-                startPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
-                minVelo.Set((float)rand.NextDouble() * 3 - 1.5f, (float)rand.NextDouble() * 1 - 0.5f, (float)rand.NextDouble() * 3 - 1.5f);
+                // Leave hive
+                if (Api.World.Rand.NextDouble() > 0.5)
+                {
+                    startPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
+                    minVelo.Set((float)rand.NextDouble() * 3 - 1.5f, (float)rand.NextDouble() * 1 - 0.5f, (float)rand.NextDouble() * 3 - 1.5f);
 
-                Bees.MinPos = startPos;
-                Bees.MinVelocity = minVelo;
-                Bees.LifeLength = 1f;
-                Bees.WithTerrainCollision = false;
+                    Bees.MinPos = startPos;
+                    Bees.MinVelocity = minVelo;
+                    Bees.LifeLength = 1f;
+                    Bees.WithTerrainCollision = false;
+                }
+
+                // Go back to hive
+                else
+                {
+                    startPos.Set(Pos.X + rand.NextDouble() * 5 - 2.5, Pos.Y + rand.NextDouble() * 2 - 1f, Pos.Z + rand.NextDouble() * 5 - 2.5f);
+                    endPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
+
+                    minVelo.Set((float)(endPos.X - startPos.X), (float)(endPos.Y - startPos.Y), (float)(endPos.Z - startPos.Z));
+                    minVelo /= 2;
+
+                    Bees.MinPos = startPos;
+                    Bees.MinVelocity = minVelo;
+                    Bees.WithTerrainCollision = true;
+                }
+
+                Api.World.SpawnParticles(Bees);
             }
-
-            // Go back to hive
-            else
-            {
-                startPos.Set(Pos.X + rand.NextDouble() * 5 - 2.5, Pos.Y + rand.NextDouble() * 2 - 1f, Pos.Z + rand.NextDouble() * 5 - 2.5f);
-                endPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
-
-                minVelo.Set((float)(endPos.X - startPos.X), (float)(endPos.Y - startPos.Y), (float)(endPos.Z - startPos.Z));
-                minVelo /= 2;
-
-                Bees.MinPos = startPos;
-                Bees.MinVelocity = minVelo;
-                Bees.WithTerrainCollision = true;
-            }
-
-            Api.World.SpawnParticles(Bees);
         }
 
         public override void OnBlockPlaced(ItemStack byItemStack = null)
@@ -312,7 +320,7 @@ namespace FromGoldenCombs.BlockEntities
                 tempOutOfRange = true;
             }
 
-            if(hivePopSize > 0 && !tempOutOfRange) handleCropCharges(tempOutOfRange, worldTime);
+            if (hivePopSize > 0 && !tempOutOfRange) handleCropCharges(tempOutOfRange, worldTime);
 
             // Reset timers during winter
             if (threeDayTemp <= minTemp || threeDayTemp >= maxTemp)
@@ -395,7 +403,7 @@ namespace FromGoldenCombs.BlockEntities
                             this.scanQuantityNearbyHives++;
                         }
                         return;
-                    } 
+                    }
                 }
             });
 
@@ -419,7 +427,7 @@ namespace FromGoldenCombs.BlockEntities
                 skepToPop = null;
             }
 
-                hivePopSize = (EnumHivePopSize)GameMath.Clamp(quantityNearbyFlowers - FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives, 0, 2);
+            hivePopSize = (EnumHivePopSize)GameMath.Clamp(quantityNearbyFlowers - FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives, 0, 2);
 
             if (FGCServerConfig.Current.minFlowersPerHive * quantityNearbyHives + FGCServerConfig.Current.minFlowersPerHive > quantityNearbyFlowers)
             {
@@ -447,7 +455,7 @@ namespace FromGoldenCombs.BlockEntities
             // We want to translate the swarmability value 0..4
             // into swarm days 12..0
             float swarmInDays = (4f - swarmability) * 2.5f;
-            
+
             if (swarmability <= 0) skepToPop = null;
 
 
@@ -523,8 +531,8 @@ namespace FromGoldenCombs.BlockEntities
 
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
-            
-            
+
+
             //Debug Information
             if (Api.World.EntityDebugMode && forPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative)
             {
@@ -576,7 +584,7 @@ namespace FromGoldenCombs.BlockEntities
             {
                 hiveState += "\n" + "The bees are out gathering.";
             }
-            else if (!outOfTemp && !Harvestable) 
+            else if (!outOfTemp && !Harvestable)
             {
                 hiveState += "\n" + "The bees are scouting for flowers.";
             }
@@ -603,7 +611,7 @@ namespace FromGoldenCombs.BlockEntities
             if (this.roomness > 0f)
             {
                 dsc.AppendLine("\n" + Lang.Get("greenhousetempbonus", Array.Empty<object>()));
-                
+
             }
             if (FGCServerConfig.Current.showExtraBeehiveInfo && (forPlayer.Entity.Controls.ShiftKey || FGCClientConfig.Current.alwaysShowExtraBeehiveInfo == true))
             {
