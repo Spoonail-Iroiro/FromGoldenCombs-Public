@@ -17,16 +17,10 @@ namespace FromGoldenCombs.Items
         /// </returns>
         public override string GetHeldItemName(ItemStack itemStack)
         {
-            
-            if (itemStack.Collectible.Variant["accent"] != null)
-            {
-                return Lang.Get(this.VariantStrict["primary"].ToString().UcFirst()) + "-" + Lang.Get(this.Variant["accent"].ToString().UcFirst()) + " " + Lang.Get(base.GetHeldItemName(itemStack).ToString());
-            }
-            else
-            {
-                return Lang.Get(this.VariantStrict["primary"].ToString().UcFirst()) + " " + Lang.Get(base.GetHeldItemName(itemStack).ToString());
-            }
-
+            string materialPrimary = Lang.Get($"material-{VariantStrict["primary"]}").UcFirst();
+            string? materialAccent = itemStack.Collectible.Variant["accent"] != null ? Lang.Get($"material-{Variant["accent"]}").UcFirst() : null;
+            string materials = materialAccent != null ? Lang.Get("fromgoldencombs:materials", materialPrimary, materialAccent) : materialPrimary;
+            return Lang.Get("fromgoldencombs:item-langstrothpart", base.GetHeldItemName(itemStack), materials);
         }
     }
 }

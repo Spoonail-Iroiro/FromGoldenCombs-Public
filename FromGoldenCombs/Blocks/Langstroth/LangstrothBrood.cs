@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 
@@ -52,7 +53,7 @@ namespace FromGoldenCombs.Blocks.Langstroth
         public override string GetPlacedBlockName(IWorldAccessor world, BlockPos pos) {
             StringBuilder sb = new();
                         
-            return Variant["populated"].UcFirst() + " " + sb.ToString() + base.GetPlacedBlockName(world, pos);
+            return Lang.Get($"fromgoldencombs:langstroth-{Variant["populated"]}").UcFirst() + " " + sb.ToString() + base.GetPlacedBlockName(world, pos);
         }
     }
 }
