@@ -403,39 +403,49 @@ namespace FromGoldenCombs.BlockEntities
 
         private void SpawnBeeParticles(float dt)
         {
+            // Particle count scale: base * config value
+            var scale = 1.5f * (float)FGCClientConfig.Current.hiveParticleAmount;
+
             if (isActiveHive)
             {
+
                 float dayLightStrength = Api.World.Calendar.GetDayLightStrength(Pos.X, Pos.Z);
                 if (Api.World.Rand.NextDouble() > (2 * dayLightStrength - 0.5))
                     return;
 
                 Random rand = Api.World.Rand;
 
-                Bees.MinQuantity = _activityLevel;
+                // Particle amount reaches max slightly before max activity level to increase the chance players encounter enough particles
+                Bees.MinQuantity = Math.Min(_activityLevel * 1.3f, 1.0f);
 
-                // Leave hive
-                if (Api.World.Rand.NextDouble() > 0.5)
+                var count = GameMath.RoundRandom(Api.World.Rand, scale);
+
+                for (var i = 0; i < count; ++i)
                 {
-                    startPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
-                    minVelo.Set((float)rand.NextDouble() * 3 - 1.5f, (float)rand.NextDouble() * 1 - 0.5f, (float)rand.NextDouble() * 3 - 1.5f);
+                    // Leave hive
+                    if (Api.World.Rand.NextDouble() > 0.5)
+                    {
+                        startPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
+                        minVelo.Set((float)rand.NextDouble() * 3 - 1.5f, (float)rand.NextDouble() * 1 - 0.5f, (float)rand.NextDouble() * 3 - 1.5f);
 
-                    Bees.MinPos = startPos;
-                    Bees.MinVelocity = minVelo;
-                    Bees.LifeLength = 1f;
-                    Bees.WithTerrainCollision = false;
-                }
-                // Go back to hive
-                else
-                {
-                    startPos.Set(Pos.X + rand.NextDouble() * 5 - 2.5, Pos.Y + rand.NextDouble() * 2 - 1f, Pos.Z + rand.NextDouble() * 5 - 2.5f);
-                    endPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
+                        Bees.MinPos = startPos;
+                        Bees.MinVelocity = minVelo;
+                        Bees.LifeLength = 1f;
+                        Bees.WithTerrainCollision = false;
+                    }
+                    // Go back to hive
+                    else
+                    {
+                        startPos.Set(Pos.X + rand.NextDouble() * 5 - 2.5, Pos.Y + rand.NextDouble() * 2 - 1f, Pos.Z + rand.NextDouble() * 5 - 2.5f);
+                        endPos.Set(Pos.X + 0.5f, Pos.Y + 0.5f, Pos.Z + 0.5f);
 
-                    minVelo.Set((float)(endPos.X - startPos.X), (float)(endPos.Y - startPos.Y), (float)(endPos.Z - startPos.Z));
-                    minVelo /= 2;
+                        minVelo.Set((float)(endPos.X - startPos.X), (float)(endPos.Y - startPos.Y), (float)(endPos.Z - startPos.Z));
+                        minVelo /= 2;
 
-                    Bees.MinPos = startPos;
-                    Bees.MinVelocity = minVelo;
-                    Bees.WithTerrainCollision = true;
+                        Bees.MinPos = startPos;
+                        Bees.MinVelocity = minVelo;
+                        Bees.WithTerrainCollision = true;
+                    }
                     Api.World.SpawnParticles(Bees);
                 }
             }
@@ -654,6 +664,7 @@ namespace FromGoldenCombs.BlockEntities
             tree.SetDouble("cropChargeAtTotalHours", cropChargeAtTotalHours);
             tree.SetInt("maxCropCharges", maxCropCharges);
             tree.SetInt("cropcharges", cropcharges);
+            tree.SetFloat("activityLevel", _activityLevel);
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
@@ -679,6 +690,7 @@ namespace FromGoldenCombs.BlockEntities
             cropChargeAtTotalHours = tree.GetDouble("cropChargeAtTotalHours");
             maxCropCharges = tree.GetInt("maxCropCharges");
             cropcharges = tree.GetInt("cropcharges");
+            _activityLevel = tree.GetFloat("activityLevel");
 
             updateMeshes();
 

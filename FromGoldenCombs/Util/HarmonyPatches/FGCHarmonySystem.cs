@@ -120,4 +120,17 @@ namespace FromGoldenCombs.Util.HarmonyPatches
 
         }
     }
+
+    [HarmonyPatch(typeof(BlockEntityBeehive), "SpawnBeeParticles")]
+    public static class SpawnBeeParticlesPatch
+    {
+        public static bool Prefix(BlockEntityBeehive __instance)
+        {
+            // Skep particle is handled by BEFGCBeehive, not by BlockEntityBeehive
+            var isSkep = __instance.Block is BlockSkep;
+            return !isSkep;
+        }
+    }
+
+
 }
