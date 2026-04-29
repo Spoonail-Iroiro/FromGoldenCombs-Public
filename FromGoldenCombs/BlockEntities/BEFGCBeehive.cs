@@ -536,7 +536,7 @@ namespace FromGoldenCombs.BlockEntities
                         (beginPopStartTotalHours + popHiveAfterHours - Api.World.Calendar.TotalHours).ToString("#.##"),
                         (harvestableAtTotalHours - Api.World.Calendar.TotalHours) / Api.World.Calendar.HoursPerDay,
                         (cooldownUntilTotalHours - Api.World.Calendar.TotalHours).ToString("#.##"))
-                        + "\n" + Lang.Get("Population Size: ") + hivePopSize);
+                        + "\n" + Lang.Get("Population Size: ") + Lang.Get(hivePopSize.ToString()));
             }
 
             //General Information

@@ -79,7 +79,7 @@ namespace FromGoldenCombs.Blocks.Langstroth
             return base.GetPlacedBlockName(world, pos);
  
             StringBuilder sb = new();
-            return base.GetPlacedBlockName(world, pos) + sb.AppendLine() + Lang.Get("fromgoldencombs:getmaterials", this.Variant["primary"].ToString().UcFirst(), this.Variant["accent"].ToString().UcFirst());
+            return base.GetPlacedBlockName(world, pos) + sb.AppendLine() + Lang.Get("fromgoldencombs:getmaterials", Lang.Get($"material-{VariantStrict["primary"]}").UcFirst(), Lang.Get($"material-{Variant["accent"]}").UcFirst());
         }
     }
  }

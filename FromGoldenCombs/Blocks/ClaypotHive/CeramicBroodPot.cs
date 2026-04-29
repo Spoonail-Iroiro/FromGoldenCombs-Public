@@ -165,7 +165,7 @@ namespace FromGoldenCombs.Blocks
                             return new WorldInteraction[]
                             {
                             new WorldInteraction(){
-                                ActionLangCode = "fromgoldencombs:blockhelp-ceramichive-empty-notop",
+                                ActionLangCode = Lang.Get("fromgoldencombs:blockhelp-ceramichive-empty-notop"),
                                 MouseButton = EnumMouseButton.Right,
                                 Itemstacks = skepList.ToArray()
                             }
@@ -250,7 +250,7 @@ namespace FromGoldenCombs.Blocks
         public override string GetHeldItemName(ItemStack itemStack)
         {
 
-            return base.GetHeldItemName(itemStack) + " (" + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Lang.Get(this.Variant["color"] + ")"));            
+            return base.GetHeldItemName(itemStack) + " (" + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Lang.Get($"fromgoldencombs:fired-{this.Variant["color"]}")) + ")";
         }
     }
 }
